@@ -1,3 +1,5 @@
+'use strict';
+
 var dPJS = function (tag_id, background_colour, dot_colour) {
     this.background_colour = background_colour;
     this.dot_colour = dot_colour;
@@ -15,14 +17,17 @@ var dPJS = function (tag_id, background_colour, dot_colour) {
         // Set background colour;
         this.ctx.fillStyle = this.background_colour;
         this.ctx.fillRect(0, 0, this.container.offsetWidth, this.container.offsetHeight);
-
+        
         // Create all the dots;
+        var size = 5;
+        var distanceX;
+        var distanceY;
         for (var a = 0; a < this.horizontalDots; a++) {
             for (var b = 0; b < this.verticalDots; b++) {
                 this.ctx.beginPath();
                 let positionX = a * 32;
                 let positionY = b * 32;
-                var size = 5;
+                size = 5;
                 if (this.canvas.mouseHover &&
                     Math.abs(positionX - this.canvas.mouseX) < 220 &&
                     Math.abs(positionY - this.canvas.mouseY) < 220) {
@@ -32,12 +37,12 @@ var dPJS = function (tag_id, background_colour, dot_colour) {
                     if (distanceX == 0) {
                         distanceX = 0.1;
                     };
-                    distanceRatio = Math.abs(distanceY / distanceX);
+                    let distanceRatio = Math.abs(distanceY / distanceX);
                     let totalDistance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
                     let pushDistance = Math.max(200 - totalDistance, 0);
 
-                    moveX = Math.sqrt(Math.pow(pushDistance, 2) / (1 + Math.pow(distanceRatio, 2))) * 0.1;
-                    moveY = moveX * distanceRatio;
+                    let moveX = Math.sqrt(Math.pow(pushDistance, 2) / (1 + Math.pow(distanceRatio, 2))) * 0.1;
+                    let moveY = moveX * distanceRatio;
 
                     if (positionX - this.canvas.mouseX < 0) {
                         moveX *= -1;
@@ -65,7 +70,7 @@ var dPJS = function (tag_id, background_colour, dot_colour) {
         window.requestAnimationFrame(this.draw);
     });
 
-    this.container.addEventListener("mouseleave", (event) => {
+    this.container.addEventListener("mouseleave", () => {
         this.canvas.mouseHover = false;
         window.requestAnimationFrame(this.draw);
     });
@@ -75,9 +80,9 @@ window.dotPatternJS = function (tag_id, background_colour, dot_colour) {
     if (!tag_id) {
         tag_id = "dot-pattern-js";
     };
-    canvas = document.createElement("canvas");
+    var canvas = document.createElement("canvas");
     canvas.id = "canvas-" + tag_id;
-    container = document.getElementById(tag_id);
+    var container = document.getElementById(tag_id);
     container.appendChild(canvas);
     new dPJS(tag_id, background_colour, dot_colour);
 };
