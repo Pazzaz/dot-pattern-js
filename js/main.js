@@ -1,1 +1,1 @@
-window.dotPatternJS("dot-pattern-js", "#ffdd1e", "#e08216")
+window.dotPatternJS("dot-pattern-js", "#ffdd1e", "#e08216");
