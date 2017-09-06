@@ -49,10 +49,10 @@ var dPJS = function (tag_id, background_colour, dot_colour) {
 
                     if (positionX - this.canvas.mouseX < 0) {
                         moveX *= -1;
-                    };
+                    }
                     if (positionY - this.canvas.mouseY < 0) {
                         moveY *= -1;
-                    };
+                    }
                     positionX += moveX;
                     positionY += moveY;
                     size += pushDistance / 50;
