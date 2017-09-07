@@ -15,65 +15,76 @@ class DPJS {
         this.canvas.width = this.container.offsetWidth.toString();
         this.dots = [];
     }
-
-
+    
+    createDots() {
+        let horizontalDots = (this.container.offsetWidth / 32) + 1;
+        let verticalDots = (this.container.offsetHeight / 32) + 1;
+        for (var a = 0; a < horizontalDots; a++) {
+            for (var b = 0; b < verticalDots; b++) {
+                this.dots.push(new Dot(a * 32, b * 32, this.dotSize));
+            }
+        }
+        window.requestAnimationFrame(() => { this.update(); });
+    }
+    
     update() {
         // Draw the background
         this.ctx.fillStyle = this.background_colour;
-        this.ctx.fillRect(this.canvas.lastMouseX - this.radius, this.canvas.lastMouseY - this.radius, this.radius * 2, this.radius * 2);
+        this.ctx.fillRect(this.canvas.mouseLastX - this.radius, this.canvas.mouseLastY - this.radius, this.radius * 2, this.radius * 2);
         this.ctx.fillRect(this.canvas.mouseX - this.radius, this.canvas.mouseY - this.radius, this.radius * 2, this.radius * 2);
 
         
         // Create all the dots
         this.ctx.fillStyle = this.dot_colour;
         for (var dot of this.dots) {
-            /*
-            * Calculate the new positions for the dots in the area affected by
-            * the mousepointer.
-            */
-            if (this.canvas.mouseHover) {
-                this.ctx.beginPath();
-                if (Math.abs(dot.x - this.canvas.mouseX) < this.radius && Math.abs(dot.y - this.canvas.mouseY) < this.radius) {
-                    let distanceX = dot.x - this.canvas.mouseX;
-                    let distanceY = dot.y - this.canvas.mouseY;
-                    if (distanceX == 0) {
-                        distanceX = 0.1;
-                    }
-                    const distanceRatio = Math.abs(distanceY / distanceX);
-                    const totalDistance = Math.hypot(distanceX, distanceY);
-                    const pushDistance = Math.max(this.radius - totalDistance, 0);
-                    
-                    let moveX = Math.sqrt((pushDistance ** 2) / (1 + (distanceRatio ** 2))) * this.power;
-                    let moveY = moveX * distanceRatio;
-                    
-                    if (dot.x - this.canvas.mouseX < 0) {
-                        moveX *= -1;
-                    }
-                    if (dot.y - this.canvas.mouseY < 0) {
-                        moveY *= -1;
-                    }
-                    this.ctx.arc(
-                        dot.x + moveX, 
-                        dot.y + moveY, 
-                        dot.size + (pushDistance / 50) * this.dotGrow, 
-                        0, 
-                        2 * Math.PI
-                    );
-                    this.ctx.fill();
-                } else if (Math.abs(dot.x - this.canvas.lastMouseX) < this.radius + 20 && Math.abs(dot.y - this.canvas.lastMouseY) < this.radius + 20) {
-                    /* 
-                     * Draw normal dots if the dots are in the area that was 
-                     * affected by the pointer on the last update.
-                     */
-                    this.ctx.arc(
-                        dot.x,
-                        dot.y,
-                        dot.size, 
-                        0,
-                        2 * Math.PI
-                    );
-                    this.ctx.fill();
+            let mouseDotDistanceX = dot.x - this.canvas.mouseX;
+            let mouseDotDistanceY = dot.y - this.canvas.mouseY;
+            let mouseDotDistanceLastX = dot.x - this.canvas.mouseLastX;
+            let mouseDotDistanceLastY = dot.y - this.canvas.mouseLastY;
+            if (Math.abs(mouseDotDistanceX) < this.radius && 
+                Math.abs(mouseDotDistanceY) < this.radius)
+            {
+                if (mouseDotDistanceX == 0) {
+                    mouseDotDistanceX = 0.1;
                 }
+                const distanceRatio = Math.abs(mouseDotDistanceY / mouseDotDistanceX);
+                const totalDistance = Math.hypot(mouseDotDistanceX, mouseDotDistanceY);
+                const pushDistance = Math.max(this.radius - totalDistance, 0);
+                
+                let moveX = Math.sqrt((pushDistance ** 2) / (1 + (distanceRatio ** 2))) * this.power;
+                let moveY = moveX * distanceRatio;
+                
+                if (mouseDotDistanceX < 0) {
+                    moveX *= -1;
+                }
+                if (mouseDotDistanceY < 0) {
+                    moveY *= -1;
+                }
+                this.ctx.beginPath();
+                this.ctx.arc(
+                    dot.x + moveX, 
+                    dot.y + moveY, 
+                    dot.size + (pushDistance / 50) * this.dotGrow, 
+                    0, 
+                    2 * Math.PI
+                );
+                this.ctx.fill();
+            } else if (Math.abs(mouseDotDistanceLastX) < this.radius + 20 && 
+                        Math.abs(mouseDotDistanceLastY) < this.radius + 20) 
+            {
+                /* 
+                * Draw normal dots if the dots are in the area that was 
+                * affected by the pointer on the last update.
+                */
+                this.ctx.beginPath();
+                this.ctx.arc(
+                    dot.x,
+                    dot.y,
+                    dot.size, 
+                    0,
+                    2 * Math.PI
+                );
+                this.ctx.fill();
             }
         }
     }
@@ -94,34 +105,21 @@ class DPJS {
             this.ctx.fill();
         }
     }
-    
-    createDots() {
-        let horizontalDots = (this.container.offsetWidth / 32) + 1;
-        let verticalDots = (this.container.offsetHeight / 32) + 1;
-        for (var a = 0; a < horizontalDots; a++) {
-            for (var b = 0; b < verticalDots; b++) {
-                this.dots.push(new Dot(a * 32, b * 32, this.dotSize));
-            }
-        }
-        window.requestAnimationFrame(() => { this.update(); });
-    }
 
     activate() {
         window.requestAnimationFrame(() => { this.resetCanvas(); });
     
         // Move dots with mouse pointer
         this.container.addEventListener("mousemove", (event) => {
-            this.canvas.lastMouseX = this.canvas.mouseX || event.pageX - this.container.offsetLeft;
-            this.canvas.lastMouseY = this.canvas.mouseY || event.pageY - this.container.offsetLeft;
+            this.canvas.mouseLastX = this.canvas.mouseX || event.pageX - this.container.offsetLeft;
+            this.canvas.mouseLastY = this.canvas.mouseY || event.pageY - this.container.offsetLeft;
             this.canvas.mouseX = event.pageX - this.container.offsetLeft;
             this.canvas.mouseY = event.pageY - this.container.offsetTop;
-            this.canvas.mouseHover = true;
             window.requestAnimationFrame(() => { this.update(); });
         });
     
         // Reset when the mouse leaves the canvas
         this.container.addEventListener("mouseleave", () => {
-            this.canvas.mouseHover = false;
             window.requestAnimationFrame(() => { this.resetCanvas(); });
         });
     }
@@ -140,6 +138,7 @@ window.dotPatternJS = function (tag_id, background_colour, dot_colour, radius, p
         tag_id = "dot-pattern-js";
     }
     let canvas = document.createElement("canvas");
+    canvas.setAttribute("moz-opaque", "");
     canvas.id = "canvas-" + tag_id;
     let container = document.getElementById(tag_id);
     container.appendChild(canvas);
