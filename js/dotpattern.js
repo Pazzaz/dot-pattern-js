@@ -19,11 +19,10 @@ class dPJS {
 
 
     update() {
-        // Reset the canvas by and draw the background
+        // Draw the background
         if (this.canvas.mouseHover) {
             this.ctx.fillStyle = this.background_colour;
             this.ctx.fillRect(this.canvas.lastMouseX - this.radius, this.canvas.lastMouseY - this.radius, this.radius * 2, this.radius * 2);
-            this.ctx.fillStyle = this.background_colour;
             this.ctx.fillRect(this.canvas.mouseX - this.radius, this.canvas.mouseY - this.radius, this.radius * 2, this.radius * 2);
         } else {
             this.ctx.fillStyle = this.background_colour;
@@ -31,34 +30,28 @@ class dPJS {
         }
         
         // Create all the dots
-        let positionX, 
-        positionY,
-        size,
-        distanceX,
-        distanceY,
-        moveX,
-        moveY;
+        this.ctx.fillStyle = this.dot_colour;
         for (var a = 0; a < this.horizontalDots; a++) {
             for (var b = 0; b < this.verticalDots; b++) {
                 this.ctx.beginPath();
-                positionX = a * 32;
-                positionY = b * 32;
-                size = this.dotSize;
+                let positionX = a * 32;
+                let positionY = b * 32;
+                let size = this.dotSize;
                 if (this.canvas.mouseHover &&
                     Math.abs(positionX - this.canvas.mouseX) < this.radius &&
                     Math.abs(positionY - this.canvas.mouseY) < this.radius
-                ) {
-                    distanceX = positionX - this.canvas.mouseX;
-                    distanceY = positionY - this.canvas.mouseY;
+                ) { 
+                    let distanceX = positionX - this.canvas.mouseX;
+                    let distanceY = positionY - this.canvas.mouseY;
                     if (distanceX == 0) {
                         distanceX = 0.1;
                     }
                     const distanceRatio = Math.abs(distanceY / distanceX);
-                    const totalDistance = Math.sqrt(distanceX ** 2 + distanceY ** 2);
+                    const totalDistance = Math.hypot(distanceX, distanceY);
                     const pushDistance = Math.max(this.radius - totalDistance, 0);
 
-                    moveX = Math.sqrt((pushDistance ** 2) / (1 + (distanceRatio ** 2))) * this.power;
-                    moveY = moveX * distanceRatio;
+                    let moveX = Math.sqrt((pushDistance ** 2) / (1 + (distanceRatio ** 2))) * this.power;
+                    let moveY = moveX * distanceRatio;
 
                     if (positionX - this.canvas.mouseX < 0) {
                         moveX *= -1;
@@ -69,18 +62,12 @@ class dPJS {
                     positionX += moveX;
                     positionY += moveY;
                     size += (pushDistance / 50) * this.dotGrow;
-                    this.ctx.fillStyle = this.dot_colour;
                     this.ctx.arc(positionX, positionY, size, 0, 2 * Math.PI);
                     this.ctx.fill();
-                } else if (this.canvas.mouseHover &&
-                    Math.abs(positionX - this.canvas.lastMouseX) < this.radius + 20 &&
-                    Math.abs(positionY - this.canvas.lastMouseY) < this.radius + 20
+                } else if (!this.canvas.mouseHover ||
+                    (Math.abs(positionX - this.canvas.lastMouseX) < this.radius + 20 &&
+                     Math.abs(positionY - this.canvas.lastMouseY) < this.radius + 20)
                 ) {
-                    this.ctx.fillStyle = this.dot_colour;
-                    this.ctx.arc(positionX, positionY, size, 0, 2 * Math.PI);
-                    this.ctx.fill();
-                } else if (!this.canvas.mouseHover) {
-                    this.ctx.fillStyle = this.dot_colour;
                     this.ctx.arc(positionX, positionY, size, 0, 2 * Math.PI);
                     this.ctx.fill();
                 }
