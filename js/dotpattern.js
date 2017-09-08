@@ -33,58 +33,25 @@ class DPJS {
         this.ctx.fillRect(this.canvas.mouseLastX - this.radius, this.canvas.mouseLastY - this.radius, this.radius * 2, this.radius * 2);
         this.ctx.fillRect(this.canvas.mouseX - this.radius, this.canvas.mouseY - this.radius, this.radius * 2, this.radius * 2);
 
-        
         // Create all the dots
         this.ctx.fillStyle = this.dot_colour;
         for (var dot of this.dots) {
             let mouseDotDistanceX = dot.x - this.canvas.mouseX;
             let mouseDotDistanceY = dot.y - this.canvas.mouseY;
-            let mouseDotDistanceLastX = dot.x - this.canvas.mouseLastX;
-            let mouseDotDistanceLastY = dot.y - this.canvas.mouseLastY;
-            if (Math.abs(mouseDotDistanceX) < this.radius && 
-                Math.abs(mouseDotDistanceY) < this.radius)
-            {
-                if (mouseDotDistanceX == 0) {
-                    mouseDotDistanceX = 0.1;
-                }
-                const distanceRatio = Math.abs(mouseDotDistanceY / mouseDotDistanceX);
-                const totalDistance = Math.hypot(mouseDotDistanceX, mouseDotDistanceY);
-                const pushDistance = Math.max(this.radius - totalDistance, 0);
-                
-                let moveX = Math.sqrt((pushDistance ** 2) / (1 + (distanceRatio ** 2))) * this.power;
-                let moveY = moveX * distanceRatio;
-                
-                if (mouseDotDistanceX < 0) {
-                    moveX *= -1;
-                }
-                if (mouseDotDistanceY < 0) {
-                    moveY *= -1;
-                }
-                this.ctx.beginPath();
-                this.ctx.arc(
-                    dot.x + moveX, 
-                    dot.y + moveY, 
-                    dot.size + (pushDistance / 50) * this.dotGrow, 
-                    0, 
-                    2 * Math.PI
-                );
-                this.ctx.fill();
-            } else if (Math.abs(mouseDotDistanceLastX) < this.radius + 20 && 
-                        Math.abs(mouseDotDistanceLastY) < this.radius + 20) 
-            {
+            if (
+                Math.abs(mouseDotDistanceX) < this.radius && 
+                Math.abs(mouseDotDistanceY) < this.radius
+            ){
+                dot.drawAffected(this, mouseDotDistanceX, mouseDotDistanceY);
+            } else if (
+                Math.abs(dot.x - this.canvas.mouseLastX) < this.radius + 20 && 
+                Math.abs(dot.y - this.canvas.mouseLastY) < this.radius + 20
+            ) {
                 /* 
                 * Draw normal dots if the dots are in the area that was 
                 * affected by the pointer on the last update.
                 */
-                this.ctx.beginPath();
-                this.ctx.arc(
-                    dot.x,
-                    dot.y,
-                    dot.size, 
-                    0,
-                    2 * Math.PI
-                );
-                this.ctx.fill();
+                dot.drawSimple(this);
             }
         }
     }
@@ -94,15 +61,7 @@ class DPJS {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.fillStyle = this.dot_colour;
         for (var dot of this.dots) {
-            this.ctx.beginPath();
-            this.ctx.arc(
-                dot.x,
-                dot.y,
-                dot.size, 
-                0,
-                2 * Math.PI
-            );
-            this.ctx.fill();
+            dot.drawSimple(this);
         }
     }
 
@@ -130,6 +89,32 @@ class Dot {
         this.x = positionX;
         this.y = positionY;
         this.size = size;
+    }
+    
+    drawSimple(canvas) {
+        canvas.ctx.beginPath();
+        canvas.ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+        canvas.ctx.fill();
+    }
+    
+    drawAffected(canvas, mouseDotDistanceX, mouseDotDistanceY) {
+        if (mouseDotDistanceX == 0) {
+            mouseDotDistanceX = 0.1;
+        }
+        const distanceRatio = Math.abs(mouseDotDistanceY / mouseDotDistanceX);
+        const totalDistance = Math.hypot(mouseDotDistanceX, mouseDotDistanceY);
+        const pushDistance = Math.max(canvas.radius - totalDistance, 0);
+        let moveX = Math.sqrt((pushDistance ** 2) /(1 + (distanceRatio ** 2))) * canvas.power;
+        let moveY = moveX * distanceRatio;
+        if (mouseDotDistanceX < 0) {
+            moveX *= -1;
+        }
+        if (mouseDotDistanceY < 0) {
+            moveY *= -1;
+        }
+        canvas.ctx.beginPath();
+        canvas.ctx.arc(this.x + moveX, this.y + moveY, this.size + (pushDistance / 50) * canvas.dotGrow, 0, 2 * Math.PI);
+        canvas.ctx.fill();
     }
 }
 
