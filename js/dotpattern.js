@@ -104,7 +104,7 @@ class Dot {
         const distanceRatio = Math.abs(mouseDotDistanceY / mouseDotDistanceX);
         const totalDistance = Math.hypot(mouseDotDistanceX, mouseDotDistanceY);
         const pushDistance = Math.max(canvas.radius - totalDistance, 0);
-        let moveX = Math.sqrt((pushDistance ** 2) /(1 + (distanceRatio ** 2))) * canvas.power;
+        let moveX = pushDistance / Math.sqrt(1 + distanceRatio ** 2);
         let moveY = moveX * distanceRatio;
         if (mouseDotDistanceX < 0) {
             moveX *= -1;
